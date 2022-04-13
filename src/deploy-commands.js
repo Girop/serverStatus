@@ -9,8 +9,8 @@ const guildId = process.env.GUILD_ID // Using on test server rn
 
 const commands = [
     new SlashCommandBuilder()
-        .setName('check_status')
-        .setDescription('Tell bot to watch over server'),
+        .setName('check')
+        .setDescription('Check status of server'),
         // .addStringOption(option => 
         //     option.setName('mc_server')
         //     .setDescription('Give server adress which status you want to follow')
@@ -18,7 +18,7 @@ const commands = [
 ].map(command => command.toJSON())
 
 const rest = new REST({ version: '9' }).setToken(token)
-rest.put(Routes.applicationGuildCommands(clientId, guildId), {
+rest.put(Routes.applicationCommands(clientId), {
     body: commands,
 })
     .then(() => console.log('Commands added!'))

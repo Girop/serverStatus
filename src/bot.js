@@ -5,13 +5,13 @@ import fetch from 'node-fetch'
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
 const token = process.env.CLIENT_TOKEN
 
-async function fetchData() {
+async function fetchData(channel) {
     const adress = 'amazenBooze.aternos.me'
     try {
-        const res = await fetch(`https://api.mcsrvstat.us/2/${adress}`)
+        const res = await fetch(`https://api.minetools.eu/ping/${adress}`)
         const data = await res.json()
         setPresence(data)
-        sendEditEmbeds(data)
+        sendEditEmbeds(data,channel)
 
     } catch (err) {
         console.error(err)
@@ -31,9 +31,9 @@ function setPresence(data) {
     })
 }
 
-function sendEditEmbeds(data) {
+function sendEditEmbeds(data,channel) {
     const { players, version } = data
-    const channel = client.channels.cache.get('912114447940722701')
+    const status = version['name'] === '1.18.2' ? 'Online' : 'Offline'
 
     const statusEmbed = {
         title: 'Server info',
@@ -41,41 +41,44 @@ function sendEditEmbeds(data) {
         fields: [
             {
                 name: 'Server:',
-                value: version,
+                value: status,
             },
             {
                 name: 'People online:',
-                value: players['online'],
+                value: players['online'].toString(),
             },
         ],
         timestamp: new Date(),
     }
-    
+
     channel.send({ embeds: [statusEmbed] })
-    /*
-    / channel id, fetch data, 
-    / get data
-    / check if embed exists
-    / edit embed || create embed
-
-    / embeds
-    / style as minecrat blocks /w minecraft font
-    / -pure server status
-    / -number of players
-
-    */
+    // edit embed || create embed
 }
 
 client.once('ready', () => {
     console.log('----------------------')
     console.log('Collecting blackstone!')
     console.log('----------------------')
-    fetchData()
 })
 
 // command handler
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return
+
+    const {commandName,channel} = interaction
+    
+    switch (commandName){
+        case 'check':
+            fetchData(channel)
+            interaction.reply('Checking...')
+            break
+        // case 'summon':
+        //     await interaction.reply(client.)
+        //     break
+        default:
+            await interaction.reply('Think about it again')
+            break
+    }
 })
 
 client.login(token)
