@@ -21,7 +21,16 @@ async function initStatus(channel) {
     const data = await fetchData()
     setPresence(data)
     const statusEmbed = generateStatusEmbed(data)
-    sendEmbed(statusEmbed, channel)
+    const msg = await sendEmbed(statusEmbed, channel)
+    startTicker(msg)
+}
+
+async function updateStatus(msg) {
+    const data = await fetchData()
+    setPresence(data)
+    const statusEmbed = generateStatusEmbed(data)
+    editEmbed(msg, statusEmbed)
+
 }
 
 function setPresence(data) {
@@ -36,6 +45,7 @@ function setPresence(data) {
         status: players['online'] > 0 ? 'online' : 'idle',
     })
 }
+
 function generateStatusEmbed(data) {
 
     const { players, version } = data
@@ -59,9 +69,19 @@ function generateStatusEmbed(data) {
     return statusEmbed
 }
 
-function sendEmbed(statusEmbed,channel) {
-    channel.send({ embeds: [statusEmbed] })
+async function sendEmbed(statusEmbed,channel) {
+    msg = await channel.send({ embeds: [statusEmbed] })
+    return msg
     // edit embed || create embed
+}
+
+function editEmbed(msg, statusEmbed){
+    msg.edit({ embeds: [statusEmbed] })
+}
+
+function startTicker(msg) {
+    let refreshRate = 30000
+    var intervalID = setInterval(updateStatus, refreshRate, msg); 
 }
 
 client.once('ready', () => {
