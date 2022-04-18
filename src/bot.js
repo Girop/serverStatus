@@ -5,17 +5,23 @@ import fetch from 'node-fetch'
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
 const token = process.env.CLIENT_TOKEN
 
-async function fetchData(channel) {
+async function fetchData() {
     const adress = 'amazenBooze.aternos.me'
     try {
         const res = await fetch(`https://api.minetools.eu/ping/${adress}`)
         const data = await res.json()
-        setPresence(data)
-        sendEditEmbeds(data,channel)
-
+        return data
+        
     } catch (err) {
         console.error(err)
+        return null
     }
+}
+async function initStatus(channel) {
+    const data = await fetchData()
+    setPresence(data)
+    const statusEmbed = generateStatusEmbed(data)
+    sendEmbed(statusEmbed, channel)
 }
 
 function setPresence(data) {
@@ -30,8 +36,8 @@ function setPresence(data) {
         status: players['online'] > 0 ? 'online' : 'idle',
     })
 }
+function generateStatusEmbed(data) {
 
-function sendEditEmbeds(data,channel) {
     const { players, version } = data
     const status = version['name'] === '1.18.2' ? 'Online' : 'Offline'
 
@@ -50,7 +56,10 @@ function sendEditEmbeds(data,channel) {
         ],
         timestamp: new Date(),
     }
+    return statusEmbed
+}
 
+function sendEmbed(statusEmbed,channel) {
     channel.send({ embeds: [statusEmbed] })
     // edit embed || create embed
 }
@@ -69,7 +78,7 @@ client.on('interactionCreate', async interaction => {
     
     switch (commandName){
         case 'check':
-            fetchData(channel)
+            initStatus(channel)
             interaction.reply('Checking...')
             break
         // case 'summon':
