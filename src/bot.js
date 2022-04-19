@@ -1,4 +1,5 @@
-import { Client, Intents, Formatters } from 'discord.js'
+import { Client, Intents } from 'discord.js'
+import { time } from '@discordjs/builders'
 import 'dotenv/config'
 import fetch from 'node-fetch'
 
@@ -40,9 +41,8 @@ class Session {
     }
 
     toFormatedString() {
-        const formatter = new Formatters()
-        let formatedStart = this.start && formatter.time(this.start, "R")
-        let formatedEnd = this.start && formatter.time(this.end, "R")
+        let formatedStart = this.start && time(this.start, 'R')
+        let formatedEnd = this.start && time(this.end, 'R')
         return `${formatedStart ?? ''} - ${formatedEnd ?? ''} : ${
             isNaN(this.maxPeopleOnline) ? '' : this.maxPeopleOnline
         }`
@@ -177,12 +177,13 @@ async function updateStatus(msg, embed) {
 
 function setPresence(data) {
     console.log('setPresence: starting')
-    const { players } = data
+    const { players, version } = data
+    let status = version['name'] === '1.18.2' ? 'Online' : 'Offline'
     // console.log("setPresence", players, data)
     client.user.setPresence({
         activities: [
             {
-                name: `${players['online']} people`,
+                name: `${players['online']} ${players['online'] === 1 ? "person" : "people"}`,
                 type: 'PLAYING',
             },
         ],
