@@ -5,17 +5,32 @@ import fetch from 'node-fetch'
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
 const token = process.env.CLIENT_TOKEN
 
-async function fetchData(channel) {
+async function fetchData() {
     const adress = 'amazenBooze.aternos.me'
     try {
         const res = await fetch(`https://api.minetools.eu/ping/${adress}`)
         const data = await res.json()
-        setPresence(data)
-        sendEditEmbeds(data,channel)
-
+        return data
+        
     } catch (err) {
         console.error(err)
+        return null
     }
+}
+async function initStatus(channel) {
+    const data = await fetchData()
+    setPresence(data)
+    const statusEmbed = generateStatusEmbed(data)
+    const msg = await sendEmbed(statusEmbed, channel)
+    startTicker(msg)
+}
+
+async function updateStatus(msg) {
+    const data = await fetchData()
+    setPresence(data)
+    const statusEmbed = generateStatusEmbed(data)
+    editEmbed(msg, statusEmbed)
+
 }
 
 function setPresence(data) {
@@ -31,7 +46,8 @@ function setPresence(data) {
     })
 }
 
-function sendEditEmbeds(data,channel) {
+function generateStatusEmbed(data) {
+
     const { players, version } = data
     const status = version['name'] === '1.18.2' ? 'Online' : 'Offline'
 
@@ -50,9 +66,22 @@ function sendEditEmbeds(data,channel) {
         ],
         timestamp: new Date(),
     }
+    return statusEmbed
+}
 
-    channel.send({ embeds: [statusEmbed] })
+async function sendEmbed(statusEmbed,channel) {
+    msg = await channel.send({ embeds: [statusEmbed] })
+    return msg
     // edit embed || create embed
+}
+
+function editEmbed(msg, statusEmbed){
+    msg.edit({ embeds: [statusEmbed] })
+}
+
+function startTicker(msg) {
+    let refreshRate = 30000
+    var intervalID = setInterval(updateStatus, refreshRate, msg); 
 }
 
 client.once('ready', () => {
@@ -69,7 +98,7 @@ client.on('interactionCreate', async interaction => {
     
     switch (commandName){
         case 'check':
-            fetchData(channel)
+            initStatus(channel)
             interaction.reply('Checking...')
             break
         // case 'summon':
