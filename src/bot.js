@@ -7,6 +7,7 @@ class Session {
     constructor(newState = 'Offline') {
         this.previousState = newState
         this.ended = false
+        this.maxPeopleOnline = 0
 
         this.end = null
         this.start = null
