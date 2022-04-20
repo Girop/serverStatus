@@ -13,6 +13,7 @@ class Session {
     }
 
     update(previousState, newState, peopleOnline) {
+        console.log('Previous state > new state:',previousState,newState)
         this.maxPeopleOnline = Math.max(peopleOnline, this.maxPeopleOnline)
         if (newState === 'Offline') {
             if (previousState === 'Online') {
