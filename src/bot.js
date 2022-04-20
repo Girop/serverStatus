@@ -80,6 +80,7 @@ class Embed {
     }
 
     getEmbedObj() {
+        console.log('Last session embed:',this.lastSession)
         const statusEmbed = {
             title: 'Server info',
             color: this.color,
@@ -176,6 +177,7 @@ async function updateStatus(msg, embed) {
     embed.update(data)
     const statusEmbed = embed.getEmbedObj()
     editEmbed(msg, statusEmbed)
+    console.log('Updated')
 }
 
 function setPresence(data) {
