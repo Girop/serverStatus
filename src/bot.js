@@ -14,7 +14,7 @@ class Session {
     }
 
     update(previousState, newState, peopleOnline) {
-        console.log('Previous state > new state:',previousState,newState)
+        console.log('Previous state > new state:', previousState, newState)
         this.maxPeopleOnline = Math.max(peopleOnline, this.maxPeopleOnline)
         if (newState === 'Offline') {
             if (previousState === 'Online') {
@@ -53,7 +53,7 @@ class Session {
 class Embed {
     constructor(data) {
         this.color = '#008369'
-        this.recentSession = new Session()
+        this.previousSession = new Session()
         this.lastSession = new Session()
         this.update(data)
     }
@@ -61,21 +61,17 @@ class Embed {
     update(data) {
         const { players, version } = data
         let status = version['name'] === '1.18.2' ? 'Online' : 'Offline'
-        
+
         if (status === 'Online') {
             if (this.status === 'Offline') {
                 // moving session up in a queue
-                if (this.lastSession.ended){
-                    this.recentSession = this.lastSession.copied()
+                if (this.lastSession.ended) {
+                    this.previousSession = this.lastSession.copied()
                 }
                 this.lastSession = new Session(this.status)
             }
         }
-        this.lastSession.update(
-            this.status, 
-            status, 
-            players['online']
-        )
+        this.lastSession.update(this.status, status, players['online'])
 
         this.status = status
         this.color = this.status === 'Online' ? '#008369' : '#ff0000'
@@ -83,7 +79,7 @@ class Embed {
     }
 
     getEmbedObj() {
-        console.log('Last session embed:',this.lastSession)
+        console.log('Last session embed:', this.lastSession)
         const statusEmbed = {
             title: 'Server info',
             color: this.color,
@@ -97,8 +93,8 @@ class Embed {
                     value: this.playersOnline.toString(),
                 },
                 {
-                    name: 'Recently',
-                    value: this.recentSession.toFormatedString(),
+                    name: 'Previous',
+                    value: this.previousSession.toFormatedString(),
                 },
                 {
                     name: 'Last session',
@@ -110,6 +106,16 @@ class Embed {
         return statusEmbed
     }
 }
+
+const client = new Client({ intents: [Intents.FLAGS.GUILDS,Intents.FLAGS.GUILD_MESSAGES] })
+const token = process.env.CLIENT_TOKEN
+client.login(token)
+
+client.once('ready', () => {
+    console.log('----------------------')
+    console.log('Collecting blackstone!')
+    console.log('----------------------')
+})
 
 async function fetchData() {
     const adress = 'amazenBooze.aternos.me'
@@ -142,33 +148,6 @@ async function initStatus(channel) {
     startTicker(msg, embed)
 }
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
-const token = process.env.CLIENT_TOKEN
-client.login(token)
-
-client.once('ready', () => {
-    console.log('----------------------')
-    console.log('Collecting blackstone!')
-    console.log('----------------------')
-})
-
-// command handler
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return
-
-    const { commandName, channel } = interaction
-
-    switch (commandName) {
-        case 'check':
-            interaction.reply('Checking...')
-            initStatus(channel)
-            break
-        default:
-            await interaction.reply('Think about it again')
-            break
-    }
-})
-
 async function updateStatus(msg, embed) {
     console.log('Updating...')
     const data = await fetchData()
@@ -191,7 +170,9 @@ function setPresence(data) {
     client.user.setPresence({
         activities: [
             {
-                name: `${players['online']} ${players['online'] === 1 ? "person" : "people"}`,
+                name: `${players['online']} ${
+                    players['online'] === 1 ? 'person' : 'people'
+                }`,
                 type: 'PLAYING',
             },
         ],
@@ -214,3 +195,29 @@ function startTicker(msg, embed) {
     const refreshRate = 30000
     var intervalID = setInterval(updateStatus, refreshRate, msg, embed)
 }
+
+async function clearMessages(channel,message){
+    const allMsg = await channel.messages.fetch({limit:100})
+    console.log(allMsg.length)
+}
+
+// command handler
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return
+
+    const { commandName, channel , message} = interaction
+
+    switch (commandName) {
+        case 'check':
+            interaction.reply('Checking...')
+            initStatus(channel)
+            break
+        case 'clear':
+            interaction.reply('Clearing...')
+            clearMessages(channel,message)
+
+        default:
+            await interaction.reply('Think about it again')
+            break
+    }
+})

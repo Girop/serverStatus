@@ -5,16 +5,14 @@ import 'dotenv/config'
 
 const token = process.env.CLIENT_TOKEN
 const clientId = process.env.CLIENT_ID
-const guildId = process.env.GUILD_ID // Using on test server rn
 
 const commands = [
     new SlashCommandBuilder()
         .setName('check')
         .setDescription('Check status of server'),
-        // .addStringOption(option => 
-        //     option.setName('mc_server')
-        //     .setDescription('Give server adress which status you want to follow')
-        //     .setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('clear')
+        .setDescription('clear channel from all messages')
 ].map(command => command.toJSON())
 
 const rest = new REST({ version: '9' }).setToken(token)
