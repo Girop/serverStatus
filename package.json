@@ -12,6 +12,7 @@
   "main": "./src/bot.js",
   "type": "module",
   "scripts": {
+    "start": "node ./src/bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
