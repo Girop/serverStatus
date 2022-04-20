@@ -14,7 +14,7 @@ class Session {
     }
 
     update(previousState, newState, peopleOnline) {
-        console.log('Previous state > new state:', previousState, newState)
+        // console.log('Previous state > new state:', previousState, newState)
         this.maxPeopleOnline = Math.max(peopleOnline, this.maxPeopleOnline)
         if (newState === 'Offline') {
             if (previousState === 'Online') {
@@ -79,7 +79,7 @@ class Embed {
     }
 
     getEmbedObj() {
-        console.log('Last session embed:', this.lastSession)
+        // console.log('Last session embed:', this.lastSession)
         const statusEmbed = {
             title: 'Server info',
             color: this.color,
@@ -142,7 +142,7 @@ async function initStatus(channel) {
     setPresence(data)
     const embed = new Embed(data)
     embed.update(data)
-    console.log('initStatus embed:', embed.getEmbedObj())
+    // console.log('initStatus embed:', embed.getEmbedObj())
     const statusEmbed = embed.getEmbedObj()
     const msg = await sendEmbed(statusEmbed, channel)
     startTicker(msg, embed)
