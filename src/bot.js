@@ -5,28 +5,27 @@ import fetch from 'node-fetch'
 
 class Session {
     constructor(newState = 'Offline') {
-        this.currentState = newState
+        this.previousState = newState
         this.ended = false
 
         this.end = null
         this.start = null
     }
 
-    update(newState, peopleOnline) {
-        console.log('Session > Update:', this.currentState, newState)
+    update(previousState, newState, peopleOnline) {
         this.maxPeopleOnline = Math.max(peopleOnline, this.maxPeopleOnline)
-        this.continues = this.currentState === 'Online'
         if (newState === 'Offline') {
-            if (this.currentState === 'Online') {
+            if (previousState === 'Online') {
                 this.end = new Date()
                 this.ended = true
             }
-        } else if (newState === 'Online') {
+        } else if (previousState === 'Online') {
             if (this.currentState === 'Offline') {
                 this.start = new Date()
-                console.log('Session > update: new session start', this.start)
             }
         }
+        this.previousState = previousState
+        this.continues = this.previousState === 'Online'
     }
 
     copied() {
@@ -34,7 +33,7 @@ class Session {
         newSession.start = this.start
         newSession.end = this.end
         newSession.ended = this.ended
-        newSession.currentState = this.currentState
+        newSession.previousState = this.previousState
         newSession.continues = this.continues
         newSession.maxPeopleOnline = this.maxPeopleOnline
         return newSession
@@ -57,18 +56,23 @@ class Embed {
     }
 
     update(data) {
-        console.log('Update data:', data)
         const { players, version } = data
         let status = version['name'] === '1.18.2' ? 'Online' : 'Offline'
-        this.lastSession.update(status, players['online'])
-
+        
         if (status === 'Online') {
             if (this.status === 'Offline') {
                 // moving session up in a queue
-                this.recentSession = this.lastSession.copied()
+                if (this.lastSession.ended){
+                    this.recentSession = this.lastSession.copied()
+                }
                 this.lastSession = new Session(this.status)
             }
         }
+        this.lastSession.update(
+            this.status, 
+            status, 
+            players['online']
+        )
 
         this.status = status
         this.color = this.status === 'Online' ? '#008369' : '#ff0000'
@@ -170,7 +174,6 @@ async function updateStatus(msg, embed) {
     }
     setPresence(data)
     embed.update(data)
-    console.log('updateStatus', embed.getEmbedObj())
     const statusEmbed = embed.getEmbedObj()
     editEmbed(msg, statusEmbed)
 }
