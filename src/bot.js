@@ -18,6 +18,7 @@ class Session {
         if (newState === 'Offline') {
             if (previousState === 'Online') {
                 this.end = new Date()
+                console.log('Getting end')
                 this.ended = true
             }
         } else if (newState === 'Online') {
@@ -42,7 +43,7 @@ class Session {
 
     toFormatedString() {
         let formatedStart = this.start && time(this.start, 'R')
-        let formatedEnd = this.start && time(this.end, 'R')
+        let formatedEnd = this.end && time(this.end, 'R')
         return `${formatedStart ?? ''} - ${formatedEnd ?? ''} : ${
             isNaN(this.maxPeopleOnline) ? '' : this.maxPeopleOnline
         }`
