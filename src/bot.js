@@ -18,9 +18,9 @@ class Session {
             if (previousState === 'Online') {
                 this.end = new Date()
                 this.ended = true
-            }   
-        } else if (previousState === 'Online') {
-            if (this.currentState === 'Offline') {
+            }
+        } else if (newState === 'Online') {
+            if (!this.start || previousState === 'Offline') {
                 this.start = new Date()
             }
         }
