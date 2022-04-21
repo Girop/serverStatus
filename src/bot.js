@@ -107,7 +107,9 @@ class Embed {
     }
 }
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS,Intents.FLAGS.GUILD_MESSAGES] })
+const client = new Client({
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+})
 const token = process.env.CLIENT_TOKEN
 client.login(token)
 
@@ -196,26 +198,29 @@ function startTicker(msg, embed) {
     var intervalID = setInterval(updateStatus, refreshRate, msg, embed)
 }
 
-async function clearMessages(channel,message){
-    const allMsg = await channel.messages.fetch({limit:100})
-    console.log(allMsg.length)
+async function clearMessages(channel) {
+    let messages
+    do {
+        messages = await channel.messages.fetch({ limit: 100 })
+        channel.bulkDelete(messages)
+    } while (messages.length > 0)
 }
 
 // command handler
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return
 
-    const { commandName, channel , message} = interaction
-
+    const { commandName, channel } = interaction
+    channel.lastMessage
     switch (commandName) {
         case 'check':
-            interaction.reply('Checking...')
             initStatus(channel)
+            await interaction.reply('Checking...')
             break
         case 'clear':
-            interaction.reply('Clearing...')
-            clearMessages(channel,message)
-
+            await interaction.reply('Clearing...')
+            clearMessages(channel)
+            break
         default:
             await interaction.reply('Think about it again')
             break
