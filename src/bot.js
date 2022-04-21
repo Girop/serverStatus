@@ -210,7 +210,7 @@ async function clearMessages(channel) {
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return
 
-    const { commandName, channel } = interaction
+    const { commandName, channel, message } = interaction
     channel.lastMessage
     switch (commandName) {
         case 'check':
@@ -218,8 +218,13 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply('Checking...')
             break
         case 'clear':
-            await interaction.reply('Clearing...')
-            clearMessages(channel)
+            const hasAccess = message.member.roles.chache.some(role => role.name ==='Sprzątacz')
+            if(hasAccess){
+                await interaction.reply('Clearing...')
+                clearMessages(channel)
+            }else {
+                await interaction.reply('Not enought social credit, sorry')
+            }
             break
         default:
             await interaction.reply('Think about it again')
